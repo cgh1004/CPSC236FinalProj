@@ -197,6 +197,8 @@ def runGame():
     level, fallFreq = calculateLevelAndFallFreq(score)
     #hasHeld: has the user held a piece yet? defines whether hold piece is drawn on screen
     hasHeld = False
+    #is this a holdable piece? e.g has the user placed their previous held piece?
+    canHold = True
     
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
@@ -283,7 +285,7 @@ def runGame():
                             break
                     fallingPiece['y'] += i - 1
                 
-                elif event.key == K_c:
+                elif event.key == K_c and canHold:
                     #**********************************************
                     print("CPRESSED")
                     print("orig faller: ", fallingPiece.get('shape'))
@@ -308,6 +310,8 @@ def runGame():
                         #nextPiece = getNewPiece()
                         heldPiece = holdPiece(tempPiece)
                         lastFallTime = time.time()
+                    
+                    canHold = False
                     
                     # print("ac faller: ", fallingPiece.get('shape'))
                     # print('ac next: ', nextPiece.get('shape'))
@@ -335,6 +339,8 @@ def runGame():
                 score += removeCompleteLines(board)
                 level, fallFreq = calculateLevelAndFallFreq(score)
                 fallingPiece = None
+                #if the user has held, the held piece has been set down and they can hold again.
+                canHold = True
             else:
                 # piece did not land, just move the piece down
                 fallingPiece['y'] += 1
