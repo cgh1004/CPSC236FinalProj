@@ -15,7 +15,8 @@ BOARDHEIGHT = 20
 BLANK = '.'
 
 MOVESIDEWAYSFREQ = 0.15
-MOVEDOWNFREQ = 0.1
+MOVEDOWNFREQ = 0.
+#MOVEDOWNFREQ = 0.1
 
 XMARGIN = int((WINDOWWIDTH - BOARDWIDTH * BOXSIZE) / 2)
 TOPMARGIN = WINDOWHEIGHT - (BOARDHEIGHT * BOXSIZE) - 5
@@ -194,9 +195,12 @@ def runGame():
     movingRight = False
     score = 0
     level, fallFreq = calculateLevelAndFallFreq(score)
+    #hasHeld: has the user held a piece yet? defines whether hold piece is drawn on screen
+    hasHeld = False
     
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
+    heldPiece = None #?****************************************************
 
     while True: # game loop
         
@@ -209,9 +213,15 @@ def runGame():
             fallingPiece = nextPiece
             nextPiece = getNewPiece()
             lastFallTime = time.time() # reset lastFallTime
+        
+        # print("ac faller: ", fallingPiece.get('shape'))
+        # print('ac next: ', nextPiece.get('shape'))
+        # if hasHeld:
+        #     print("ac held: ", heldPiece.get('shape'))
+        # else: print("hold empty)")
 
-            if not isValidPosition(board, fallingPiece):
-                return # can't fit a new piece on the board, so game over
+        if not isValidPosition(board, fallingPiece):
+            return # can't fit a new piece on the board, so game over
 
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
@@ -272,6 +282,37 @@ def runGame():
                         if not isValidPosition(board, fallingPiece, adjY=i):
                             break
                     fallingPiece['y'] += i - 1
+                
+                elif event.key == K_c:
+                    #**********************************************
+                    print("CPRESSED")
+                    print("orig faller: ", fallingPiece.get('shape'))
+                    print('orig next: ', nextPiece.get('shape'))
+                    if hasHeld:
+                        print("orig held: ", heldPiece.get('shape'))
+                    else: print("hold empty")
+                    
+                    movingDown = False
+                    movingLeft = False
+                    movingRight = False
+                    tempPiece = holdPiece(fallingPiece)
+                    #heldPiece = holdPiece(fallingPiece)
+                    if not hasHeld:
+                        heldPiece = holdPiece(fallingPiece)
+                        fallingPiece = nextPiece
+                        nextPiece = getNewPiece()
+                        lastFallTime = time.time()
+                        hasHeld = True
+                    else:
+                        fallingPiece = holdPiece(heldPiece)
+                        #nextPiece = getNewPiece()
+                        heldPiece = holdPiece(tempPiece)
+                        lastFallTime = time.time()
+                    
+                    # print("ac faller: ", fallingPiece.get('shape'))
+                    # print('ac next: ', nextPiece.get('shape'))
+                    # print("ac held: ", heldPiece.get('shape'))
+                    
 
         # handle moving the piece because of user input
         if (movingLeft or movingRight) and time.time() - lastMoveSidewaysTime > MOVESIDEWAYSFREQ:
@@ -303,6 +344,8 @@ def runGame():
         DISPLAYSURF.fill(BGCOLOR)
         drawBoard(board)
         drawStatus(score, level)
+        if hasHeld:
+            drawHeldPiece(heldPiece) #********************************heldPiece
         drawNextPiece(nextPiece)
         if fallingPiece != None:
             drawPiece(fallingPiece)
@@ -395,6 +438,17 @@ def getNewPiece():
                 'y': -2, # start it above the board (i.e. less than 0)
                 'color': random.randint(0, len(COLORS)-1)}
     return newPiece
+
+def holdPiece(piece):
+    # return the held version of a falling/held piece by resetting its rotation and position.
+    #essentially creates a piece deep copy but reset position
+    shape = piece.get('shape')
+    heldPiece = {'shape': shape,
+                'rotation': random.randint(0, len(PIECES[shape]) - 1),
+                'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
+                'y': -2, # start it above the board (i.e. less than 0)
+                'color': random.randint(0, len(COLORS)-1)}
+    return heldPiece
 
 
 def addToBoard(board, piece):
@@ -526,6 +580,17 @@ def drawNextPiece(piece):
     DISPLAYSURF.blit(nextSurf, nextRect)
     # draw the "next" piece
     drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
+    
+#draw the current "held" piece in the upper left side of the game screen
+def drawHeldPiece(piece):
+    # draw the "hold" text
+    holdSurf = BASICFONT.render('Hold:', True, TEXTCOLOR)
+    holdRect = holdSurf.get_rect()
+    holdRect.topleft = (WINDOWWIDTH - 580, 80)
+    DISPLAYSURF.blit(holdSurf, holdRect)
+    # draw the "held" piece
+    drawPiece(piece, pixelx=WINDOWWIDTH-580, pixely=100)
+
 
 
 
