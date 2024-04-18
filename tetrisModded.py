@@ -3,11 +3,7 @@
 # http://inventwithpython.com/pygame
 # Released under a "Simplified BSD" license
 
-import random
-import sys
-import time
-
-import pygame
+import random, time, pygame, sys
 from pygame.locals import *
 
 FPS = 25
@@ -16,243 +12,322 @@ WINDOWHEIGHT = 480
 BOXSIZE = 20
 BOARDWIDTH = 10
 BOARDHEIGHT = 20
-BLANK = "."
+BLANK = '.'
 
 MOVESIDEWAYSFREQ = 0.15
-MOVEDOWNFREQ = 0.1
+MOVEDOWNFREQ = 0.
+#MOVEDOWNFREQ = 0.1
 
 XMARGIN = int((WINDOWWIDTH - BOARDWIDTH * BOXSIZE) / 2)
 TOPMARGIN = WINDOWHEIGHT - (BOARDHEIGHT * BOXSIZE) - 5
 
 #               R    G    B
-WHITE = (255, 255, 255)
-GRAY = (185, 185, 185)
-BLACK = (0, 0, 0)
-RED = (155, 0, 0)
-LIGHTRED = (175, 20, 20)
-GREEN = (0, 155, 0)
-LIGHTGREEN = (20, 175, 20)
-BLUE = (0, 0, 155)
-LIGHTBLUE = (20, 20, 175)
-YELLOW = (155, 155, 0)
-LIGHTYELLOW = (175, 175, 20)
+WHITE       = (255, 255, 255)
+GRAY        = (185, 185, 185)
+BLACK       = (  0,   0,   0)
+RED         = (155,   0,   0)
+LIGHTRED    = (175,  20,  20)
+GREEN       = (  0, 155,   0)
+LIGHTGREEN  = ( 20, 175,  20)
+BLUE        = (  0,   0, 155)
+LIGHTBLUE   = ( 20,  20, 175)
+YELLOW      = (155, 155,   0)
+LIGHTYELLOW = (175, 175,  20)
 
 BORDERCOLOR = BLUE
 BGCOLOR = BLACK
 TEXTCOLOR = WHITE
 TEXTSHADOWCOLOR = GRAY
-COLORS = (BLUE, GREEN, RED, YELLOW)
+COLORS      = (     BLUE,      GREEN,      RED,      YELLOW)
 LIGHTCOLORS = (LIGHTBLUE, LIGHTGREEN, LIGHTRED, LIGHTYELLOW)
-assert len(COLORS) == len(LIGHTCOLORS)  # each color must have light color
+assert len(COLORS) == len(LIGHTCOLORS) # each color must have light color
 
 TEMPLATEWIDTH = 5
 TEMPLATEHEIGHT = 5
 
-S_SHAPE_TEMPLATE = [
-    [".....", ".....", "..OO.", ".OO..", "....."],
-    [".....", "..O..", "..OO.", "...O.", "....."],
-]
+S_SHAPE_TEMPLATE = [['.....',
+                     '.....',
+                     '..OO.',
+                     '.OO..',
+                     '.....'],
+                    ['.....',
+                     '..O..',
+                     '..OO.',
+                     '...O.',
+                     '.....']]
 
-Z_SHAPE_TEMPLATE = [
-    [".....", ".....", ".OO..", "..OO.", "....."],
-    [".....", "..O..", ".OO..", ".O...", "....."],
-]
+Z_SHAPE_TEMPLATE = [['.....',
+                     '.....',
+                     '.OO..',
+                     '..OO.',
+                     '.....'],
+                    ['.....',
+                     '..O..',
+                     '.OO..',
+                     '.O...',
+                     '.....']]
 
-I_SHAPE_TEMPLATE = [
-    ["..O..", "..O..", "..O..", "..O..", "....."],
-    [".....", ".....", "OOOO.", ".....", "....."],
-]
+I_SHAPE_TEMPLATE = [['..O..',
+                     '..O..',
+                     '..O..',
+                     '..O..',
+                     '.....'],
+                    ['.....',
+                     '.....',
+                     'OOOO.',
+                     '.....',
+                     '.....']]
 
-O_SHAPE_TEMPLATE = [[".....", ".....", ".OO..", ".OO..", "....."]]
+O_SHAPE_TEMPLATE = [['.....',
+                     '.....',
+                     '.OO..',
+                     '.OO..',
+                     '.....']]
 
-J_SHAPE_TEMPLATE = [
-    [".....", ".O...", ".OOO.", ".....", "....."],
-    [".....", "..OO.", "..O..", "..O..", "....."],
-    [".....", ".....", ".OOO.", "...O.", "....."],
-    [".....", "..O..", "..O..", ".OO..", "....."],
-]
+J_SHAPE_TEMPLATE = [['.....',
+                     '.O...',
+                     '.OOO.',
+                     '.....',
+                     '.....'],
+                    ['.....',
+                     '..OO.',
+                     '..O..',
+                     '..O..',
+                     '.....'],
+                    ['.....',
+                     '.....',
+                     '.OOO.',
+                     '...O.',
+                     '.....'],
+                    ['.....',
+                     '..O..',
+                     '..O..',
+                     '.OO..',
+                     '.....']]
 
-L_SHAPE_TEMPLATE = [
-    [".....", "...O.", ".OOO.", ".....", "....."],
-    [".....", "..O..", "..O..", "..OO.", "....."],
-    [".....", ".....", ".OOO.", ".O...", "....."],
-    [".....", ".OO..", "..O..", "..O..", "....."],
-]
+L_SHAPE_TEMPLATE = [['.....',
+                     '...O.',
+                     '.OOO.',
+                     '.....',
+                     '.....'],
+                    ['.....',
+                     '..O..',
+                     '..O..',
+                     '..OO.',
+                     '.....'],
+                    ['.....',
+                     '.....',
+                     '.OOO.',
+                     '.O...',
+                     '.....'],
+                    ['.....',
+                     '.OO..',
+                     '..O..',
+                     '..O..',
+                     '.....']]
 
-T_SHAPE_TEMPLATE = [
-    [".....", "..O..", ".OOO.", ".....", "....."],
-    [".....", "..O..", "..OO.", "..O..", "....."],
-    [".....", ".....", ".OOO.", "..O..", "....."],
-    [".....", "..O..", ".OO..", "..O..", "....."],
-]
+T_SHAPE_TEMPLATE = [['.....',
+                     '..O..',
+                     '.OOO.',
+                     '.....',
+                     '.....'],
+                    ['.....',
+                     '..O..',
+                     '..OO.',
+                     '..O..',
+                     '.....'],
+                    ['.....',
+                     '.....',
+                     '.OOO.',
+                     '..O..',
+                     '.....'],
+                    ['.....',
+                     '..O..',
+                     '.OO..',
+                     '..O..',
+                     '.....']]
 
-PIECES = {
-    "S": S_SHAPE_TEMPLATE,
-    "Z": Z_SHAPE_TEMPLATE,
-    "J": J_SHAPE_TEMPLATE,
-    "L": L_SHAPE_TEMPLATE,
-    "I": I_SHAPE_TEMPLATE,
-    "O": O_SHAPE_TEMPLATE,
-    "T": T_SHAPE_TEMPLATE,
-}
+PIECES = {'S': S_SHAPE_TEMPLATE,
+          'Z': Z_SHAPE_TEMPLATE,
+          'J': J_SHAPE_TEMPLATE,
+          'L': L_SHAPE_TEMPLATE,
+          'I': I_SHAPE_TEMPLATE,
+          'O': O_SHAPE_TEMPLATE,
+          'T': T_SHAPE_TEMPLATE}
 
-hotkeys = {
-    "left": K_LEFT,
-    "right": K_RIGHT,
-    "down": K_DOWN,
-    "hard_drop": K_SPACE,
-    "rotate_left": K_z,
-    "rotate_right": K_x,
-    "pause": K_p,
-    "settings": K_1,
-    "quit": K_ESCAPE,
-}
+LSPIECES = ['S', 'Z', 'J', 'L','I','O','T']
+
+#bag setup
+#format: availability (1/0) of s z j l i o t
+shapeBag = [1,1,1,1,1,1,1]
 
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT, MEDIUMFONT
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
-    BASICFONT = pygame.font.Font("freesansbold.ttf", 18)
-    MEDIUMFONT = pygame.font.Font("freesansbold.ttf", 32)
-    BIGFONT = pygame.font.Font("freesansbold.ttf", 100)
-    pygame.display.set_caption("Tetromino")
+    BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
+    BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
+    pygame.display.set_caption('Tetromino')
 
-    showTextScreen("Tetromino")
-    while True:  # game loop
+    showTextScreen('Tetromino')
+    while True: # game loop
         if random.randint(0, 1) == 0:
-            pygame.mixer.music.load("tetrisb.mid")
+            pygame.mixer.music.load('tetrisb.mid')
         else:
-            pygame.mixer.music.load("tetrisc.mid")
+            pygame.mixer.music.load('tetrisc.mid')
         pygame.mixer.music.play(-1, 0.0)
         runGame()
         pygame.mixer.music.stop()
-        showTextScreen("Game Over")
+        showTextScreen('Game Over')
 
 
 def runGame():
     # setup variables for the start of the game
+    global shapeBag
     board = getBlankBoard()
     lastMoveDownTime = time.time()
     lastMoveSidewaysTime = time.time()
     lastFallTime = time.time()
-    movingDown = False  # note: there is no movingUp variable
+    movingDown = False # note: there is no movingUp variable
     movingLeft = False
     movingRight = False
     score = 0
     level, fallFreq = calculateLevelAndFallFreq(score)
-
+    #hasHeld: has the user held a piece yet? defines whether hold piece is drawn on screen
+    hasHeld = False
+    #is this a holdable piece? e.g has the user placed their previous held piece?
+    canHold = True
+    
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
+    heldPiece = None #?****************************************************
 
-    while True:  # game loop
+    while True: # game loop
+        
+        #if bag has been exhausted, refresh bag
+        if 1 not in shapeBag:
+            shapeBag = [1,1,1,1,1,1,1]
+            
         if fallingPiece == None:
             # No falling piece in play, so start a new piece at the top
             fallingPiece = nextPiece
             nextPiece = getNewPiece()
-            lastFallTime = time.time()  # reset lastFallTime
+            lastFallTime = time.time() # reset lastFallTime
+        
+        # print("ac faller: ", fallingPiece.get('shape'))
+        # print('ac next: ', nextPiece.get('shape'))
+        # if hasHeld:
+        #     print("ac held: ", heldPiece.get('shape'))
+        # else: print("hold empty)")
 
-            if not isValidPosition(board, fallingPiece):
-                return  # can't fit a new piece on the board, so game over
+        if not isValidPosition(board, fallingPiece):
+            return # can't fit a new piece on the board, so game over
 
         checkForQuit()
-        for event in pygame.event.get():  # event handling loop
+        for event in pygame.event.get(): # event handling loop
             if event.type == KEYUP:
-                if event.key == hotkeys['pause']:
+                if (event.key == K_p):
                     # Pausing the game
                     DISPLAYSURF.fill(BGCOLOR)
                     pygame.mixer.music.stop()
-                    showTextScreen("Paused")  # pause until a key press
+                    showTextScreen('Paused') # pause until a key press
                     pygame.mixer.music.play(-1, 0.0)
                     lastFallTime = time.time()
                     lastMoveDownTime = time.time()
                     lastMoveSidewaysTime = time.time()
-                elif event.key == hotkeys['settings']:
-                    DISPLAYSURF.fill(BGCOLOR)
-                    pygame.mixer.music.stop()
-                    showSettingsScreen()
-                    pygame.mixer.music.play(-1, 0.0)
-                    lastFallTime = time.time()
-                    lastMoveDownTime = time.time()
-                    lastMoveSidewaysTime = time.time()
-
-                elif event.key == hotkeys['left']:
+                elif (event.key == K_LEFT or event.key == K_a):
                     movingLeft = False
-                elif event.key == hotkeys['right']:
+                elif (event.key == K_RIGHT or event.key == K_d):
                     movingRight = False
-                elif event.key == hotkeys['down']:
+                elif (event.key == K_DOWN or event.key == K_s):
                     movingDown = False
 
             elif event.type == KEYDOWN:
                 # moving the piece sideways
-                if (event.key == hotkeys['left']) and isValidPosition(
-                    board, fallingPiece, adjX=-1
-                ):
-                    fallingPiece["x"] -= 1
+                if (event.key == K_LEFT or event.key == K_a) and isValidPosition(board, fallingPiece, adjX=-1):
+                    fallingPiece['x'] -= 1
                     movingLeft = True
                     movingRight = False
                     lastMoveSidewaysTime = time.time()
 
-                elif (event.key == hotkeys['right']) and isValidPosition(
-                    board, fallingPiece, adjX=1
-                ):
-                    fallingPiece["x"] += 1
+                elif (event.key == K_RIGHT or event.key == K_d) and isValidPosition(board, fallingPiece, adjX=1):
+                    fallingPiece['x'] += 1
                     movingRight = True
                     movingLeft = False
                     lastMoveSidewaysTime = time.time()
 
                 # rotating the piece (if there is room to rotate)
-                elif event.key == hotkeys['rotate_right']:
-                    fallingPiece["rotation"] = (fallingPiece["rotation"] + 1) % len(
-                        PIECES[fallingPiece["shape"]]
-                    )
+                elif (event.key == K_UP or event.key == K_w):
+                    fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
                     if not isValidPosition(board, fallingPiece):
-                        fallingPiece["rotation"] = (fallingPiece["rotation"] - 1) % len(
-                            PIECES[fallingPiece["shape"]]
-                        )
-                elif event.key == hotkeys['rotate_left']:  # rotate the other direction
-                    fallingPiece["rotation"] = (fallingPiece["rotation"] - 1) % len(
-                        PIECES[fallingPiece["shape"]]
-                    )
+                        fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
+                elif (event.key == K_q): # rotate the other direction
+                    fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
                     if not isValidPosition(board, fallingPiece):
-                        fallingPiece["rotation"] = (fallingPiece["rotation"] + 1) % len(
-                            PIECES[fallingPiece["shape"]]
-                        )
+                        fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
 
                 # making the piece fall faster with the down key
-                elif event.key == hotkeys['down']:
+                elif (event.key == K_DOWN or event.key == K_s):
                     movingDown = True
                     if isValidPosition(board, fallingPiece, adjY=1):
-                        fallingPiece["y"] += 1
+                        fallingPiece['y'] += 1
                     lastMoveDownTime = time.time()
 
                 # move the current piece all the way down
-                elif event.key == hotkeys['hard_drop']:
+                elif event.key == K_SPACE:
                     movingDown = False
                     movingLeft = False
                     movingRight = False
                     for i in range(1, BOARDHEIGHT):
                         if not isValidPosition(board, fallingPiece, adjY=i):
                             break
-                    fallingPiece["y"] += i - 1
+                    fallingPiece['y'] += i - 1
+                
+                elif event.key == K_c and canHold:
+                    #**********************************************
+                    print("CPRESSED")
+                    print("orig faller: ", fallingPiece.get('shape'))
+                    print('orig next: ', nextPiece.get('shape'))
+                    if hasHeld:
+                        print("orig held: ", heldPiece.get('shape'))
+                    else: print("hold empty")
+                    
+                    movingDown = False
+                    movingLeft = False
+                    movingRight = False
+                    tempPiece = holdPiece(fallingPiece)
+                    #heldPiece = holdPiece(fallingPiece)
+                    if not hasHeld:
+                        heldPiece = holdPiece(fallingPiece)
+                        fallingPiece = nextPiece
+                        nextPiece = getNewPiece()
+                        lastFallTime = time.time()
+                        hasHeld = True
+                    else:
+                        fallingPiece = holdPiece(heldPiece)
+                        #nextPiece = getNewPiece()
+                        heldPiece = holdPiece(tempPiece)
+                        lastFallTime = time.time()
+                    
+                    canHold = False
+                    
+                    # print("ac faller: ", fallingPiece.get('shape'))
+                    # print('ac next: ', nextPiece.get('shape'))
+                    # print("ac held: ", heldPiece.get('shape'))
+                    
 
         # handle moving the piece because of user input
-        if (
-            movingLeft or movingRight
-        ) and time.time() - lastMoveSidewaysTime > MOVESIDEWAYSFREQ:
+        if (movingLeft or movingRight) and time.time() - lastMoveSidewaysTime > MOVESIDEWAYSFREQ:
             if movingLeft and isValidPosition(board, fallingPiece, adjX=-1):
-                fallingPiece["x"] -= 1
+                fallingPiece['x'] -= 1
             elif movingRight and isValidPosition(board, fallingPiece, adjX=1):
-                fallingPiece["x"] += 1
+                fallingPiece['x'] += 1
             lastMoveSidewaysTime = time.time()
 
-        if (
-            movingDown
-            and time.time() - lastMoveDownTime > MOVEDOWNFREQ
-            and isValidPosition(board, fallingPiece, adjY=1)
-        ):
-            fallingPiece["y"] += 1
+        if movingDown and time.time() - lastMoveDownTime > MOVEDOWNFREQ and isValidPosition(board, fallingPiece, adjY=1):
+            fallingPiece['y'] += 1
             lastMoveDownTime = time.time()
 
         # let the piece fall if it is time to fall
@@ -264,15 +339,19 @@ def runGame():
                 score += removeCompleteLines(board)
                 level, fallFreq = calculateLevelAndFallFreq(score)
                 fallingPiece = None
+                #if the user has held, the held piece has been set down and they can hold again.
+                canHold = True
             else:
                 # piece did not land, just move the piece down
-                fallingPiece["y"] += 1
+                fallingPiece['y'] += 1
                 lastFallTime = time.time()
 
         # drawing everything on the screen
         DISPLAYSURF.fill(BGCOLOR)
         drawBoard(board)
         drawStatus(score, level)
+        if hasHeld:
+            drawHeldPiece(heldPiece) #********************************heldPiece
         drawNextPiece(nextPiece)
         if fallingPiece != None:
             drawPiece(fallingPiece)
@@ -317,9 +396,7 @@ def showTextScreen(text):
     DISPLAYSURF.blit(titleSurf, titleRect)
 
     # Draw the additional "Press a key to play." text.
-    pressKeySurf, pressKeyRect = makeTextObjs(
-        "Press a key to play.", BASICFONT, TEXTCOLOR
-    )
+    pressKeySurf, pressKeyRect = makeTextObjs('Press a key to play.', BASICFONT, TEXTCOLOR)
     pressKeyRect.center = (int(WINDOWWIDTH / 2), int(WINDOWHEIGHT / 2) + 100)
     DISPLAYSURF.blit(pressKeySurf, pressKeyRect)
 
@@ -327,186 +404,14 @@ def showTextScreen(text):
         pygame.display.update()
         FPSCLOCK.tick()
 
-def createSettingsObject(name, vertical_pos, text_color=TEXTCOLOR, font_size=18):
-    '''
-    creates a settings object with the given name and vertical position
-
-    Args:
-        name (str): the name of the setting
-        vertical_pos (int): the vertical position of the setting
-        text_color (tuple): the color of the text
-        font_size (int): the size of the font
-
-    Returns:
-        tuple: a tuple containing the surface, rect, name, and vertical position of the setting
-    '''
-    font = font_size
-    if type(font_size) == int:
-        font = pygame.font.Font("freesansbold.ttf", font_size)
-    keySurf, keyRect = makeTextObjs(
-       name, font, text_color
-    )
-    
-    keyRect.center = (int(WINDOWWIDTH / 2), vertical_pos)
-    DISPLAYSURF.blit(keySurf, keyRect)
-    return keySurf, keyRect, name, vertical_pos
-
-
-def showSettingsScreen():
-    ''' 
-    This function displays the settings screen where the user can change the hotkeys
-    '''
-    global hotkeys
-    # this function displays hotkey settings such as side speed and down speed
-    createSettingsObject("Settings", 80, font_size=MEDIUMFONT)
-
-    # Draw the current hotkeys being used for the game
-    settingsObjectTuples = [
-        createSettingsObject(f"Left: {pygame.key.name(hotkeys['left'])}", 150),
-        createSettingsObject(f"Right: {pygame.key.name(hotkeys['right'])}", 175),
-        createSettingsObject(f"Soft Drop: {pygame.key.name(hotkeys['down'])}", 200),
-        createSettingsObject(f"Hard Drop: {pygame.key.name(hotkeys['hard_drop'])}", 225),
-        createSettingsObject(f"Rotate Left: {pygame.key.name(hotkeys['rotate_left'])}", 250),
-        createSettingsObject(f"Rotate Right: {pygame.key.name(hotkeys['rotate_right'])}", 275),
-        createSettingsObject(f"Pause: {pygame.key.name(hotkeys['pause'])}", 300),
-        createSettingsObject(f"Settings: {pygame.key.name(hotkeys['settings'])}", 325),
-        createSettingsObject(f"Quit: {pygame.key.name(hotkeys['quit'])}", 350),
-    ]
-
-    # mapping of the settings object to the hotkeys key
-    objectToKeyMap = {
-        0: 'left',
-        1: 'right',
-        2: 'down',
-        3: 'hard_drop',
-        4: 'rotate_left',
-        5: 'rotate_right',
-        6: 'pause',
-        7: 'settings',
-        8: 'quit',
-    }
-
-
-    # Draw the additional "Press a key to play." text.
-    createSettingsObject(f"Press {pygame.key.name(hotkeys['settings'])} to play.", 400)
-
-    # Cursor variables for blinking when typing
-    cursor_visible = False
-    cursor_blink_time = 0
-    cursor_blink_interval = 500 # milliseconds
-
-    # Index of the clicked setting (-1 if none is clicked)
-    clicked_index = -1
-
-
-    while True: # game loop
-        # mouse info
-        mouse_pos = pygame.mouse.get_pos()
-        mouse_clicked = pygame.mouse.get_pressed()[0]
-
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                terminate()
-            
-            # Check if the user wants to go back to the game
-            if event.type == KEYUP:
-                if event.key == hotkeys['settings']:
-                    return
-            
-            # Check if the user wants to change the a specific hotkey
-            if event.type == KEYUP and clicked_index != -1:
-                key = event.key
-                # validate that the required key is not already in use
-                if key not in hotkeys.values():
-                    # update settings diaplay
-                    DISPLAYSURF.fill(BGCOLOR)
-                    createSettingsObject("Settings", 80, font_size=MEDIUMFONT)
-                    createSettingsObject(f"Press {pygame.key.name(hotkeys['settings'])} to play.", 400, text_color=TEXTCOLOR, font_size=BASICFONT)
-                    hotkeys[objectToKeyMap[clicked_index]] = key # update the hotkey
-                    
-                    for i, (keySurf, keyRect, *_) in enumerate(settingsObjectTuples):
-                        # got to the clicked index, update display and reset clicked index
-                        if i == clicked_index:
-                            settingsObjectTuples[clicked_index] = createSettingsObject(settingsObjectTuples[clicked_index][2].split(':')[0] + ': ' + pygame.key.name(key), settingsObjectTuples[clicked_index][3], text_color=WHITE)
-                            clicked_index = -1
-                        else:
-                            DISPLAYSURF.blit(keySurf, keyRect)
-                    
-                    
-            # highlight settings when hovered or clicked (clicked to change hotkey)
-            if event.type == MOUSEMOTION or event.type == MOUSEBUTTONDOWN or event.type == MOUSEBUTTONUP:
-                # are any of the settings hovered over
-                any_hovered = False
-                for i, (_, keyRect, name, vertical_pos) in enumerate(settingsObjectTuples):
-                    # Check if the mouse is over the rectangle
-                    if keyRect.colliderect(mouse_pos[0], mouse_pos[1], 1, 1):
-                        any_hovered = True # update hovered state so clicked_index gets reset
-
-                        # check if the mouse has been clicked and update the setting to have a cursor
-                        if mouse_clicked:
-                            clicked_index = i
-                            settingsObjectTuples[i] = createSettingsObject(name.split(':')[0] + ':' + ' _', vertical_pos, text_color=GRAY)
-                        else:
-                            settingsObjectTuples[i] = createSettingsObject(name, vertical_pos, text_color=GRAY)
-                    else:
-                        # ignore settings object with clicked index, that's handled separately
-                        if i == clicked_index:
-                            continue
-                        settingsObjectTuples[i] = createSettingsObject(name, vertical_pos, text_color=TEXTCOLOR)
-
-                # if clicked index is not updated, reset it to the old hotkey
-                if not any_hovered and mouse_clicked and clicked_index != -1:
-                    # get key, vertical position, and name of the setting
-                    key = pygame.key.name(hotkeys[objectToKeyMap[clicked_index]])
-                    vertical_pos = settingsObjectTuples[clicked_index][3]
-                    name = settingsObjectTuples[clicked_index][2]
-
-                    # update display for the setting (getting rid of the cursor)
-                    settingsObjectTuples[clicked_index] = createSettingsObject(name.split(':')[0] + ': ' + key, vertical_pos)
-                    clicked_index = -1
-
-                updateSettingsDisplay(settingsObjectTuples)
-
-        # update cursor state
-        if cursor_visible and time.time() * 1000 - cursor_blink_time > cursor_blink_interval:
-            # If the cursor is visible and the blink interval has passed, hide the cursor
-            cursor_visible = False
-            cursor_blink_time = time.time() * 1000
-        elif not cursor_visible and time.time() * 1000 - cursor_blink_time > cursor_blink_interval:
-            # If the cursor is not visible and the blink interval has passed, show the cursor
-            cursor_visible = True
-            cursor_blink_time = time.time() * 1000
-        
-        # draw the cursor if the clicked index is not -1
-        if clicked_index != -1:
-            if cursor_visible:
-                # Draw the cursor
-                settingsObjectTuples[clicked_index] = createSettingsObject(settingsObjectTuples[clicked_index][2].split(':')[0] + ':' + ' _', settingsObjectTuples[clicked_index][3], text_color=TEXTCOLOR)
-            else:
-                settingsObjectTuples[clicked_index] = createSettingsObject(settingsObjectTuples[clicked_index][2].split(':')[0] + ':' + ' ', settingsObjectTuples[clicked_index][3], text_color=TEXTCOLOR)
-            
-            updateSettingsDisplay(settingsObjectTuples)
-        
-        pygame.display.update()
-        FPSCLOCK.tick()
-
-def updateSettingsDisplay(settingsObjectTuples):
-    DISPLAYSURF.fill(BGCOLOR)
-    createSettingsObject("Settings", 80, font_size=MEDIUMFONT)
-
-    createSettingsObject(f"Press {pygame.key.name(hotkeys['settings'])} to play.", 400, text_color=TEXTCOLOR, font_size=BASICFONT)
-
-    for i, (keySurf, keyRect, *_) in enumerate(settingsObjectTuples):
-        DISPLAYSURF.blit(keySurf, keyRect)
-
 
 def checkForQuit():
-    for event in pygame.event.get(QUIT):  # get all the QUIT events
-        terminate()  # terminate if any QUIT events are present
-    for event in pygame.event.get(KEYUP):  # get all the KEYUP events
+    for event in pygame.event.get(QUIT): # get all the QUIT events
+        terminate() # terminate if any QUIT events are present
+    for event in pygame.event.get(KEYUP): # get all the KEYUP events
         if event.key == K_ESCAPE:
-            terminate()  # terminate if the KEYUP event was for the Esc key
-        pygame.event.post(event)  # put the other KEYUP event objects back
+            terminate() # terminate if the KEYUP event was for the Esc key
+        pygame.event.post(event) # put the other KEYUP event objects back
 
 
 def calculateLevelAndFallFreq(score):
@@ -516,26 +421,48 @@ def calculateLevelAndFallFreq(score):
     fallFreq = 0.27 - (level * 0.02)
     return level, fallFreq
 
+#This function implements a pseudorandom "bag" distribution of piece shapes, as opposed to the previous random shapes.
+def getNextShape():
+    global shapeBag
+    available = []
+    for i in range(0, len(shapeBag)):
+        if shapeBag[i] == 1:
+            available.append(LSPIECES[i])
+    shape = random.choice(available)
+    
+    #update shapeBag availability
+    shapeBag[LSPIECES.index(shape)] = 0
+    return shape
 
 def getNewPiece():
     # return a random new piece in a random rotation and color
-    shape = random.choice(list(PIECES.keys()))
-    newPiece = {
-        "shape": shape,
-        "rotation": random.randint(0, len(PIECES[shape]) - 1),
-        "x": int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
-        "y": -2,  # start it above the board (i.e. less than 0)
-        "color": random.randint(0, len(COLORS) - 1),
-    }
+    # shape = random.choice(list(PIECES.keys()))
+    shape = getNextShape()
+    newPiece = {'shape': shape,
+                'rotation': random.randint(0, len(PIECES[shape]) - 1),
+                'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
+                'y': -2, # start it above the board (i.e. less than 0)
+                'color': random.randint(0, len(COLORS)-1)}
     return newPiece
+
+def holdPiece(piece):
+    # return the held version of a falling/held piece by resetting its rotation and position.
+    #essentially creates a piece deep copy but reset position
+    shape = piece.get('shape')
+    heldPiece = {'shape': shape,
+                'rotation': random.randint(0, len(PIECES[shape]) - 1),
+                'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
+                'y': -2, # start it above the board (i.e. less than 0)
+                'color': random.randint(0, len(COLORS)-1)}
+    return heldPiece
 
 
 def addToBoard(board, piece):
     # fill in the board based on piece's location, shape, and rotation
     for x in range(TEMPLATEWIDTH):
         for y in range(TEMPLATEHEIGHT):
-            if PIECES[piece["shape"]][piece["rotation"]][y][x] != BLANK:
-                board[x + piece["x"]][y + piece["y"]] = piece["color"]
+            if PIECES[piece['shape']][piece['rotation']][y][x] != BLANK:
+                board[x + piece['x']][y + piece['y']] = piece['color']
 
 
 def getBlankBoard():
@@ -554,15 +481,14 @@ def isValidPosition(board, piece, adjX=0, adjY=0):
     # Return True if the piece is within the board and not colliding
     for x in range(TEMPLATEWIDTH):
         for y in range(TEMPLATEHEIGHT):
-            isAboveBoard = y + piece["y"] + adjY < 0
-            if isAboveBoard or PIECES[piece["shape"]][piece["rotation"]][y][x] == BLANK:
+            isAboveBoard = y + piece['y'] + adjY < 0
+            if isAboveBoard or PIECES[piece['shape']][piece['rotation']][y][x] == BLANK:
                 continue
-            if not isOnBoard(x + piece["x"] + adjX, y + piece["y"] + adjY):
+            if not isOnBoard(x + piece['x'] + adjX, y + piece['y'] + adjY):
                 return False
-            if board[x + piece["x"] + adjX][y + piece["y"] + adjY] != BLANK:
+            if board[x + piece['x'] + adjX][y + piece['y'] + adjY] != BLANK:
                 return False
     return True
-
 
 def isCompleteLine(board, y):
     # Return True if the line filled with boxes with no gaps.
@@ -575,13 +501,13 @@ def isCompleteLine(board, y):
 def removeCompleteLines(board):
     # Remove any completed lines on the board, move everything above them down, and return the number of complete lines.
     numLinesRemoved = 0
-    y = BOARDHEIGHT - 1  # start y at the bottom of the board
+    y = BOARDHEIGHT - 1 # start y at the bottom of the board
     while y >= 0:
         if isCompleteLine(board, y):
             # Remove the line and pull boxes down by one line.
             for pullDownY in range(y, 0, -1):
                 for x in range(BOARDWIDTH):
-                    board[x][pullDownY] = board[x][pullDownY - 1]
+                    board[x][pullDownY] = board[x][pullDownY-1]
             # Set very top line to blank.
             for x in range(BOARDWIDTH):
                 board[x][0] = BLANK
@@ -590,7 +516,7 @@ def removeCompleteLines(board):
             # This is so that if the line that was pulled down is also
             # complete, it will be removed.
         else:
-            y -= 1  # move on to check next row up
+            y -= 1 # move on to check next row up
     return numLinesRemoved
 
 
@@ -609,36 +535,16 @@ def drawBox(boxx, boxy, color, pixelx=None, pixely=None):
         return
     if pixelx == None and pixely == None:
         pixelx, pixely = convertToPixelCoords(boxx, boxy)
-    pygame.draw.rect(
-        DISPLAYSURF, COLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1)
-    )
-    pygame.draw.rect(
-        DISPLAYSURF,
-        LIGHTCOLORS[color],
-        (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4),
-    )
+    pygame.draw.rect(DISPLAYSURF, COLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 1, BOXSIZE - 1))
+    pygame.draw.rect(DISPLAYSURF, LIGHTCOLORS[color], (pixelx + 1, pixely + 1, BOXSIZE - 4, BOXSIZE - 4))
 
 
 def drawBoard(board):
     # draw the border around the board
-    pygame.draw.rect(
-        DISPLAYSURF,
-        BORDERCOLOR,
-        (
-            XMARGIN - 3,
-            TOPMARGIN - 7,
-            (BOARDWIDTH * BOXSIZE) + 8,
-            (BOARDHEIGHT * BOXSIZE) + 8,
-        ),
-        5,
-    )
+    pygame.draw.rect(DISPLAYSURF, BORDERCOLOR, (XMARGIN - 3, TOPMARGIN - 7, (BOARDWIDTH * BOXSIZE) + 8, (BOARDHEIGHT * BOXSIZE) + 8), 5)
 
     # fill the background of the board
-    pygame.draw.rect(
-        DISPLAYSURF,
-        BGCOLOR,
-        (XMARGIN, TOPMARGIN, BOXSIZE * BOARDWIDTH, BOXSIZE * BOARDHEIGHT),
-    )
+    pygame.draw.rect(DISPLAYSURF, BGCOLOR, (XMARGIN, TOPMARGIN, BOXSIZE * BOARDWIDTH, BOXSIZE * BOARDHEIGHT))
     # draw the individual boxes on the board
     for x in range(BOARDWIDTH):
         for y in range(BOARDHEIGHT):
@@ -647,46 +553,52 @@ def drawBoard(board):
 
 def drawStatus(score, level):
     # draw the score text
-    scoreSurf = BASICFONT.render("Score: %s" % score, True, TEXTCOLOR)
+    scoreSurf = BASICFONT.render('Score: %s' % score, True, TEXTCOLOR)
     scoreRect = scoreSurf.get_rect()
     scoreRect.topleft = (WINDOWWIDTH - 150, 20)
     DISPLAYSURF.blit(scoreSurf, scoreRect)
 
     # draw the level text
-    levelSurf = BASICFONT.render("Level: %s" % level, True, TEXTCOLOR)
+    levelSurf = BASICFONT.render('Level: %s' % level, True, TEXTCOLOR)
     levelRect = levelSurf.get_rect()
     levelRect.topleft = (WINDOWWIDTH - 150, 50)
     DISPLAYSURF.blit(levelSurf, levelRect)
 
 
 def drawPiece(piece, pixelx=None, pixely=None):
-    shapeToDraw = PIECES[piece["shape"]][piece["rotation"]]
+    shapeToDraw = PIECES[piece['shape']][piece['rotation']]
     if pixelx == None and pixely == None:
         # if pixelx & pixely hasn't been specified, use the location stored in the piece data structure
-        pixelx, pixely = convertToPixelCoords(piece["x"], piece["y"])
+        pixelx, pixely = convertToPixelCoords(piece['x'], piece['y'])
 
     # draw each of the boxes that make up the piece
     for x in range(TEMPLATEWIDTH):
         for y in range(TEMPLATEHEIGHT):
             if shapeToDraw[y][x] != BLANK:
-                drawBox(
-                    None,
-                    None,
-                    piece["color"],
-                    pixelx + (x * BOXSIZE),
-                    pixely + (y * BOXSIZE),
-                )
+                drawBox(None, None, piece['color'], pixelx + (x * BOXSIZE), pixely + (y * BOXSIZE))
 
 
 def drawNextPiece(piece):
     # draw the "next" text
-    nextSurf = BASICFONT.render("Next:", True, TEXTCOLOR)
+    nextSurf = BASICFONT.render('Next:', True, TEXTCOLOR)
     nextRect = nextSurf.get_rect()
     nextRect.topleft = (WINDOWWIDTH - 120, 80)
     DISPLAYSURF.blit(nextSurf, nextRect)
     # draw the "next" piece
-    drawPiece(piece, pixelx=WINDOWWIDTH - 120, pixely=100)
+    drawPiece(piece, pixelx=WINDOWWIDTH-120, pixely=100)
+    
+#draw the current "held" piece in the upper left side of the game screen
+def drawHeldPiece(piece):
+    # draw the "hold" text
+    holdSurf = BASICFONT.render('Hold:', True, TEXTCOLOR)
+    holdRect = holdSurf.get_rect()
+    holdRect.topleft = (WINDOWWIDTH - 580, 80)
+    DISPLAYSURF.blit(holdSurf, holdRect)
+    # draw the "held" piece
+    drawPiece(piece, pixelx=WINDOWWIDTH-580, pixely=100)
 
 
-if __name__ == "__main__":
+
+
+if __name__ == '__main__':
     main()
