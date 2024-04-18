@@ -161,13 +161,26 @@ LSPIECES = ['S', 'Z', 'J', 'L','I','O','T']
 #format: availability (1/0) of s z j l i o t
 shapeBag = [1,1,1,1,1,1,1]
 
+hotkeys = {
+    "left": K_LEFT,
+    "right": K_RIGHT,
+    "down": K_DOWN,
+    "hard_drop": K_SPACE,
+    "hold": K_c,
+    "rotate_left": K_z,
+    "rotate_right": K_x,
+    "pause": K_p,
+    "settings": K_1,
+    "quit": K_ESCAPE,
+}
 
 def main():
-    global FPSCLOCK, DISPLAYSURF, BASICFONT, BIGFONT
+    global FPSCLOCK, DISPLAYSURF, BASICFONT, MEDIUMFONT, BIGFONT
     pygame.init()
     FPSCLOCK = pygame.time.Clock()
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
     BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
+    MEDIUMFONT = pygame.font.Font("freesansbold.ttf", 32)
     BIGFONT = pygame.font.Font('freesansbold.ttf', 100)
     pygame.display.set_caption('Tetromino')
 
@@ -228,7 +241,7 @@ def runGame():
         checkForQuit()
         for event in pygame.event.get(): # event handling loop
             if event.type == KEYUP:
-                if (event.key == K_p):
+                if (event.key == hotkeys['pause']):
                     # Pausing the game
                     DISPLAYSURF.fill(BGCOLOR)
                     pygame.mixer.music.stop()
@@ -237,46 +250,54 @@ def runGame():
                     lastFallTime = time.time()
                     lastMoveDownTime = time.time()
                     lastMoveSidewaysTime = time.time()
-                elif (event.key == K_LEFT or event.key == K_a):
+                elif event.key == hotkeys['left']:
                     movingLeft = False
-                elif (event.key == K_RIGHT or event.key == K_d):
+                elif event.key == hotkeys['right']:
                     movingRight = False
-                elif (event.key == K_DOWN or event.key == K_s):
+                elif event.key == hotkeys['down']:
                     movingDown = False
+                elif event.key == hotkeys['settings']:
+                    DISPLAYSURF.fill(BGCOLOR)
+                    pygame.mixer.music.stop()
+                    showSettingsScreen()
+                    pygame.mixer.music.play(-1, 0.0)
+                    lastFallTime = time.time()
+                    lastMoveDownTime = time.time()
+                    lastMoveSidewaysTime = time.time()
 
             elif event.type == KEYDOWN:
                 # moving the piece sideways
-                if (event.key == K_LEFT or event.key == K_a) and isValidPosition(board, fallingPiece, adjX=-1):
+                if (event.key == hotkeys['left']) and isValidPosition(board, fallingPiece, adjX=-1):
                     fallingPiece['x'] -= 1
                     movingLeft = True
                     movingRight = False
                     lastMoveSidewaysTime = time.time()
 
-                elif (event.key == K_RIGHT or event.key == K_d) and isValidPosition(board, fallingPiece, adjX=1):
+                elif (event.key == hotkeys['right']) and isValidPosition(board, fallingPiece, adjX=1):
                     fallingPiece['x'] += 1
                     movingRight = True
                     movingLeft = False
                     lastMoveSidewaysTime = time.time()
 
                 # rotating the piece (if there is room to rotate)
-                elif (event.key == K_UP or event.key == K_w):
+                elif (event.key == hotkeys['rotate_right']):
                     fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
                     if not isValidPosition(board, fallingPiece):
                         fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
-                elif (event.key == K_q): # rotate the other direction
+                elif (event.key == hotkeys['rotate_left']): # rotate the other direction
                     fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(PIECES[fallingPiece['shape']])
                     if not isValidPosition(board, fallingPiece):
                         fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(PIECES[fallingPiece['shape']])
 
                 # making the piece fall faster with the down key
-                elif (event.key == K_DOWN or event.key == K_s):
+                elif (event.key == hotkeys['down']):
                     movingDown = True
                     if isValidPosition(board, fallingPiece, adjY=1):
                         fallingPiece['y'] += 1
                     lastMoveDownTime = time.time()
 
                 # move the current piece all the way down
-                elif event.key == K_SPACE:
+                elif event.key == hotkeys['hard_drop']:
                     movingDown = False
                     movingLeft = False
                     movingRight = False
@@ -285,7 +306,7 @@ def runGame():
                             break
                     fallingPiece['y'] += i - 1
                 
-                elif event.key == K_c and canHold:
+                elif event.key == hotkeys['hold'] and canHold:
                     #**********************************************
                     print("CPRESSED")
                     print("orig faller: ", fallingPiece.get('shape'))
@@ -404,6 +425,179 @@ def showTextScreen(text):
         pygame.display.update()
         FPSCLOCK.tick()
 
+def createSettingsObject(name, vertical_pos, text_color=TEXTCOLOR, font_size=18):
+    '''
+    creates a settings object with the given name and vertical position
+
+    Args:
+        name (str): the name of the setting
+        vertical_pos (int): the vertical position of the setting
+        text_color (tuple): the color of the text
+        font_size (int): the size of the font
+
+    Returns:
+        tuple: a tuple containing the surface, rect, name, and vertical position of the setting
+    '''
+    font = font_size
+    if type(font_size) == int:
+        font = pygame.font.Font("freesansbold.ttf", font_size)
+    keySurf, keyRect = makeTextObjs(
+       name, font, text_color
+    )
+    
+    keyRect.center = (int(WINDOWWIDTH / 2), vertical_pos)
+    DISPLAYSURF.blit(keySurf, keyRect)
+    return keySurf, keyRect, name, vertical_pos
+
+
+def showSettingsScreen():
+    ''' 
+    This function displays the settings screen where the user can change the hotkeys
+    '''
+    global hotkeys
+    # this function displays hotkey settings such as side speed and down speed
+    createSettingsObject("Settings", 80, font_size=MEDIUMFONT)
+
+    # Draw the current hotkeys being used for the game
+    settingsObjectTuples = [
+        createSettingsObject(f"Left: {pygame.key.name(hotkeys['left'])}", 150),
+        createSettingsObject(f"Right: {pygame.key.name(hotkeys['right'])}", 175),
+        createSettingsObject(f"Soft Drop: {pygame.key.name(hotkeys['down'])}", 200),
+        createSettingsObject(f"Hard Drop: {pygame.key.name(hotkeys['hard_drop'])}", 225),
+        createSettingsObject(f"Rotate Left: {pygame.key.name(hotkeys['rotate_left'])}", 250),
+        createSettingsObject(f"Rotate Right: {pygame.key.name(hotkeys['rotate_right'])}", 275),
+        createSettingsObject(f"Hold: {pygame.key.name(hotkeys['hold'])}", 300),
+        createSettingsObject(f"Pause: {pygame.key.name(hotkeys['pause'])}", 325),
+        createSettingsObject(f"Settings: {pygame.key.name(hotkeys['settings'])}", 350),
+        createSettingsObject(f"Quit: {pygame.key.name(hotkeys['quit'])}", 375),
+    ]
+
+    # mapping of the settings object to the hotkeys key
+    objectToKeyMap = {
+        0: 'left',
+        1: 'right',
+        2: 'down',
+        3: 'hard_drop',
+        4: 'rotate_left',
+        5: 'rotate_right',
+        6: 'hold',
+        7: 'pause',
+        8: 'settings',
+        9: 'quit',
+    }
+
+
+    # Draw the additional "Press a key to play." text.
+    createSettingsObject(f"Press {pygame.key.name(hotkeys['settings'])} to play.", 425)
+
+    # Cursor variables for blinking when typing
+    cursor_visible = False
+    cursor_blink_time = 0
+    cursor_blink_interval = 500 # milliseconds
+
+    # Index of the clicked setting (-1 if none is clicked)
+    clicked_index = -1
+
+
+    while True: # game loop
+        # mouse info
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_clicked = pygame.mouse.get_pressed()[0]
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                terminate()
+            
+            # Check if the user wants to go back to the game
+            if event.type == KEYUP:
+                if event.key == hotkeys['settings']:
+                    return
+            
+            # Check if the user wants to change the a specific hotkey
+            if event.type == KEYUP and clicked_index != -1:
+                key = event.key
+                # validate that the required key is not already in use
+                if key not in hotkeys.values():
+                    # update settings diaplay
+                    DISPLAYSURF.fill(BGCOLOR)
+                    createSettingsObject("Settings", 80, font_size=MEDIUMFONT)
+                    createSettingsObject(f"Press {pygame.key.name(hotkeys['settings'])} to play.", 425, text_color=TEXTCOLOR, font_size=BASICFONT)
+                    hotkeys[objectToKeyMap[clicked_index]] = key # update the hotkey
+                    
+                    for i, (keySurf, keyRect, *_) in enumerate(settingsObjectTuples):
+                        # got to the clicked index, update display and reset clicked index
+                        if i == clicked_index:
+                            settingsObjectTuples[clicked_index] = createSettingsObject(settingsObjectTuples[clicked_index][2].split(':')[0] + ': ' + pygame.key.name(key), settingsObjectTuples[clicked_index][3], text_color=WHITE)
+                            clicked_index = -1
+                        else:
+                            DISPLAYSURF.blit(keySurf, keyRect)
+                    
+                    
+            # highlight settings when hovered or clicked (clicked to change hotkey)
+            if event.type == MOUSEMOTION or event.type == MOUSEBUTTONDOWN or event.type == MOUSEBUTTONUP:
+                # are any of the settings hovered over
+                any_hovered = False
+                for i, (_, keyRect, name, vertical_pos) in enumerate(settingsObjectTuples):
+                    # Check if the mouse is over the rectangle
+                    if keyRect.colliderect(mouse_pos[0], mouse_pos[1], 1, 1):
+                        any_hovered = True # update hovered state so clicked_index gets reset
+
+                        # check if the mouse has been clicked and update the setting to have a cursor
+                        if mouse_clicked:
+                            clicked_index = i
+                            settingsObjectTuples[i] = createSettingsObject(name.split(':')[0] + ':' + ' _', vertical_pos, text_color=GRAY)
+                        else:
+                            settingsObjectTuples[i] = createSettingsObject(name, vertical_pos, text_color=GRAY)
+                    else:
+                        # ignore settings object with clicked index, that's handled separately
+                        if i == clicked_index:
+                            continue
+                        settingsObjectTuples[i] = createSettingsObject(name, vertical_pos, text_color=TEXTCOLOR)
+
+                # if clicked index is not updated, reset it to the old hotkey
+                if not any_hovered and mouse_clicked and clicked_index != -1:
+                    # get key, vertical position, and name of the setting
+                    key = pygame.key.name(hotkeys[objectToKeyMap[clicked_index]])
+                    vertical_pos = settingsObjectTuples[clicked_index][3]
+                    name = settingsObjectTuples[clicked_index][2]
+
+                    # update display for the setting (getting rid of the cursor)
+                    settingsObjectTuples[clicked_index] = createSettingsObject(name.split(':')[0] + ': ' + key, vertical_pos)
+                    clicked_index = -1
+
+                updateSettingsDisplay(settingsObjectTuples)
+
+        # update cursor state
+        if cursor_visible and time.time() * 1000 - cursor_blink_time > cursor_blink_interval:
+            # If the cursor is visible and the blink interval has passed, hide the cursor
+            cursor_visible = False
+            cursor_blink_time = time.time() * 1000
+        elif not cursor_visible and time.time() * 1000 - cursor_blink_time > cursor_blink_interval:
+            # If the cursor is not visible and the blink interval has passed, show the cursor
+            cursor_visible = True
+            cursor_blink_time = time.time() * 1000
+        
+        # draw the cursor if the clicked index is not -1
+        if clicked_index != -1:
+            if cursor_visible:
+                # Draw the cursor
+                settingsObjectTuples[clicked_index] = createSettingsObject(settingsObjectTuples[clicked_index][2].split(':')[0] + ':' + ' _', settingsObjectTuples[clicked_index][3], text_color=TEXTCOLOR)
+            else:
+                settingsObjectTuples[clicked_index] = createSettingsObject(settingsObjectTuples[clicked_index][2].split(':')[0] + ':' + ' ', settingsObjectTuples[clicked_index][3], text_color=TEXTCOLOR)
+            
+            updateSettingsDisplay(settingsObjectTuples)
+        
+        pygame.display.update()
+        FPSCLOCK.tick()
+
+def updateSettingsDisplay(settingsObjectTuples):
+    DISPLAYSURF.fill(BGCOLOR)
+    createSettingsObject("Settings", 80, font_size=MEDIUMFONT)
+
+    createSettingsObject(f"Press {pygame.key.name(hotkeys['settings'])} to play.", 425, text_color=TEXTCOLOR, font_size=BASICFONT)
+
+    for i, (keySurf, keyRect, *_) in enumerate(settingsObjectTuples):
+        DISPLAYSURF.blit(keySurf, keyRect)
 
 def checkForQuit():
     for event in pygame.event.get(QUIT): # get all the QUIT events
