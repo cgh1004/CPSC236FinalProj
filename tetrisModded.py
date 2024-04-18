@@ -67,16 +67,16 @@ Z_SHAPE_TEMPLATE = [['.....',
                      '.O...',
                      '.....']]
 
-I_SHAPE_TEMPLATE = [['..O..',
-                     '..O..',
-                     '..O..',
-                     '..O..',
-                     '.....'],
-                    ['.....',
+I_SHAPE_TEMPLATE = [['.....',
                      '.....',
                      'OOOO.',
                      '.....',
-                     '.....']]
+                     '.....'],
+                    ['..O..',
+                     '..O..',
+                     '..O..',
+                     '..O..',
+                     '.....'],]
 
 O_SHAPE_TEMPLATE = [['.....',
                      '.....',
@@ -215,7 +215,7 @@ def runGame():
     
     fallingPiece = getNewPiece()
     nextPiece = getNewPiece()
-    heldPiece = None #?****************************************************
+    heldPiece = None 
 
     while True: # game loop
         
@@ -229,11 +229,6 @@ def runGame():
             nextPiece = getNewPiece()
             lastFallTime = time.time() # reset lastFallTime
         
-        # print("ac faller: ", fallingPiece.get('shape'))
-        # print('ac next: ', nextPiece.get('shape'))
-        # if hasHeld:
-        #     print("ac held: ", heldPiece.get('shape'))
-        # else: print("hold empty)")
 
         if not isValidPosition(board, fallingPiece):
             return # can't fit a new piece on the board, so game over
@@ -306,37 +301,29 @@ def runGame():
                             break
                     fallingPiece['y'] += i - 1
                 
+                #if hold key pressed:
                 elif event.key == hotkeys['hold'] and canHold:
-                    #**********************************************
-                    print("CPRESSED")
-                    print("orig faller: ", fallingPiece.get('shape'))
-                    print('orig next: ', nextPiece.get('shape'))
-                    if hasHeld:
-                        print("orig held: ", heldPiece.get('shape'))
-                    else: print("hold empty")
-                    
+                    #pieces stop moving for now
                     movingDown = False
                     movingLeft = False
                     movingRight = False
+                    #copy the falling piece for transfer
                     tempPiece = holdPiece(fallingPiece)
-                    #heldPiece = holdPiece(fallingPiece)
+                    #if the user has not yet held, the falling piece goes to hold and the next piece falls.
                     if not hasHeld:
                         heldPiece = holdPiece(fallingPiece)
                         fallingPiece = nextPiece
                         nextPiece = getNewPiece()
                         lastFallTime = time.time()
                         hasHeld = True
+                    #if the user has previously held, the falling piece goes to hold and the held piece begins falling.
                     else:
                         fallingPiece = holdPiece(heldPiece)
-                        #nextPiece = getNewPiece()
                         heldPiece = holdPiece(tempPiece)
                         lastFallTime = time.time()
                     
+                    #reset canHold so the user cannot endlessly switch pieces.
                     canHold = False
-                    
-                    # print("ac faller: ", fallingPiece.get('shape'))
-                    # print('ac next: ', nextPiece.get('shape'))
-                    # print("ac held: ", heldPiece.get('shape'))
                     
 
         # handle moving the piece because of user input
@@ -371,8 +358,9 @@ def runGame():
         DISPLAYSURF.fill(BGCOLOR)
         drawBoard(board)
         drawStatus(score, level)
+        #if the user has held, draw held piece. otherwise, no held piece drawn.
         if hasHeld:
-            drawHeldPiece(heldPiece) #********************************heldPiece
+            drawHeldPiece(heldPiece)
         drawNextPiece(nextPiece)
         if fallingPiece != None:
             drawPiece(fallingPiece)
@@ -424,6 +412,7 @@ def showTextScreen(text):
     while checkForKeyPress() == None:
         pygame.display.update()
         FPSCLOCK.tick()
+
 
 def createSettingsObject(name, vertical_pos, text_color=TEXTCOLOR, font_size=18):
     '''
@@ -518,7 +507,7 @@ def showSettingsScreen():
                 key = event.key
                 # validate that the required key is not already in use
                 if key not in hotkeys.values():
-                    # update settings diaplay
+                    # update settings display
                     DISPLAYSURF.fill(BGCOLOR)
                     createSettingsObject("Settings", 80, font_size=MEDIUMFONT)
                     createSettingsObject(f"Press {pygame.key.name(hotkeys['settings'])} to play.", 425, text_color=TEXTCOLOR, font_size=BASICFONT)
@@ -591,6 +580,12 @@ def showSettingsScreen():
         FPSCLOCK.tick()
 
 def updateSettingsDisplay(settingsObjectTuples):
+    '''
+    updates display of settings screen
+
+    Args:
+        settingsObjectTuples (list): list of tuples containing rectangles, surfaces, positions.
+    '''
     DISPLAYSURF.fill(BGCOLOR)
     createSettingsObject("Settings", 80, font_size=MEDIUMFONT)
 
@@ -598,6 +593,7 @@ def updateSettingsDisplay(settingsObjectTuples):
 
     for i, (keySurf, keyRect, *_) in enumerate(settingsObjectTuples):
         DISPLAYSURF.blit(keySurf, keyRect)
+
 
 def checkForQuit():
     for event in pygame.event.get(QUIT): # get all the QUIT events
@@ -615,9 +611,16 @@ def calculateLevelAndFallFreq(score):
     fallFreq = 0.27 - (level * 0.02)
     return level, fallFreq
 
-#This function implements a pseudorandom "bag" distribution of piece shapes, as opposed to the previous random shapes.
+
 def getNextShape():
+    '''
+    #This function implements a pseudorandom "bag" distribution of piece shapes, as opposed to the previous random shapes.
+
+    Returns: 
+        shape (str): represents the shape chosen.
+    '''
     global shapeBag
+    #available represents the shapes that have not yet been taken (1 in shapeBag)
     available = []
     for i in range(0, len(shapeBag)):
         if shapeBag[i] == 1:
@@ -628,23 +631,30 @@ def getNextShape():
     shapeBag[LSPIECES.index(shape)] = 0
     return shape
 
+
 def getNewPiece():
-    # return a random new piece in a random rotation and color
-    # shape = random.choice(list(PIECES.keys()))
+    # return a pseudorandom new piece in random color (derandomized rotation)
     shape = getNextShape()
     newPiece = {'shape': shape,
-                'rotation': random.randint(0, len(PIECES[shape]) - 1),
+                'rotation': 0,
                 'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
                 'y': -2, # start it above the board (i.e. less than 0)
                 'color': random.randint(0, len(COLORS)-1)}
     return newPiece
 
+
 def holdPiece(piece):
-    # return the held version of a falling/held piece by resetting its rotation and position.
-    #essentially creates a piece deep copy but reset position
+    '''
+    return the held version of a falling/held piece by resetting its rotation and position. Essentially a deep copy.
+
+    Args:
+        piece (obj): the piece to hold or unhold
+    Returns: 
+        heldPiece (obj): the held or unheld piece, reset to only its shape.
+    '''
     shape = piece.get('shape')
     heldPiece = {'shape': shape,
-                'rotation': random.randint(0, len(PIECES[shape]) - 1),
+                'rotation': 0,
                 'x': int(BOARDWIDTH / 2) - int(TEMPLATEWIDTH / 2),
                 'y': -2, # start it above the board (i.e. less than 0)
                 'color': random.randint(0, len(COLORS)-1)}
@@ -760,6 +770,14 @@ def drawStatus(score, level):
 
 
 def drawPiece(piece, pixelx=None, pixely=None):
+    '''
+    draw the current held piece to the left of the board
+
+    Args:
+        piece (obj): the piece to draw
+        pixelx: horizontal location
+        pixely:vertical location
+    '''
     shapeToDraw = PIECES[piece['shape']][piece['rotation']]
     if pixelx == None and pixely == None:
         # if pixelx & pixely hasn't been specified, use the location stored in the piece data structure
@@ -773,6 +791,12 @@ def drawPiece(piece, pixelx=None, pixely=None):
 
 
 def drawNextPiece(piece):
+    '''
+    draw the next piece to the right of the board
+
+    Args:
+        piece (obj): the piece to draw
+    '''
     # draw the "next" text
     nextSurf = BASICFONT.render('Next:', True, TEXTCOLOR)
     nextRect = nextSurf.get_rect()
@@ -783,6 +807,12 @@ def drawNextPiece(piece):
     
 #draw the current "held" piece in the upper left side of the game screen
 def drawHeldPiece(piece):
+    '''
+    draw the current held piece to the left of the board
+
+    Args:
+        piece (obj): the piece to draw
+    '''
     # draw the "hold" text
     holdSurf = BASICFONT.render('Hold:', True, TEXTCOLOR)
     holdRect = holdSurf.get_rect()
